@@ -1,17 +1,47 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
-import { Send, Mail, MapPin, Phone, CheckCircle } from 'lucide-react'
+import { Send, Mail, MapPin, Phone, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { portfolioData } from '../data/portfolioData'
+
+const WEB3FORMS_KEY = '68b96877-535f-47ac-b76b-253cb6e84165'
 
 export default function Contact() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  const [submitted, setSubmitted] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 3000)
+    setStatus('sending')
+    setErrorMsg('')
+
+    const formData = new FormData(e.currentTarget)
+    formData.append('access_key', WEB3FORMS_KEY)
+    formData.append('from_name', 'Portfolio Contact Form')
+    formData.append('subject', `Portfolio Contact: ${formData.get('subject')}`)
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        setStatus('success')
+        ;(e.target as HTMLFormElement).reset()
+        setTimeout(() => setStatus('idle'), 5000)
+      } else {
+        setStatus('error')
+        setErrorMsg(data.message || 'Something went wrong. Please try again.')
+        setTimeout(() => setStatus('idle'), 4000)
+      }
+    } catch {
+      setStatus('error')
+      setErrorMsg('Network error. Please check your connection and try again.')
+      setTimeout(() => setStatus('idle'), 4000)
+    }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -97,7 +127,7 @@ export default function Contact() {
               <p className="text-sm font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>
                 Find me on
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 {Object.entries(portfolioData.socials).map(([platform, url]) => (
                   <a
                     key={platform}
@@ -134,7 +164,7 @@ export default function Contact() {
             className="md:col-span-3"
           >
             <div className="glass-card p-8">
-              {submitted ? (
+              {status === 'success' ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -144,8 +174,21 @@ export default function Contact() {
                   <h3 className="text-xl font-bold mb-2">Message Sent!</h3>
                   <p style={{ color: 'var(--text-secondary)' }}>Thanks for reaching out. I'll get back to you soon.</p>
                 </motion.div>
+              ) : status === 'error' ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-16"
+                >
+                  <AlertCircle size={48} style={{ color: '#EF4444', margin: '0 auto 16px' }} />
+                  <h3 className="text-xl font-bold mb-2">Oops!</h3>
+                  <p style={{ color: 'var(--text-secondary)' }}>{errorMsg}</p>
+                </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Hidden honeypot for spam protection */}
+                  <input type="hidden" name="botcheck" style={{ display: 'none' }} />
+
                   <div className="grid sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
@@ -153,6 +196,7 @@ export default function Contact() {
                       </label>
                       <input
                         type="text"
+                        name="name"
                         placeholder="Your name"
                         required
                         style={inputStyle}
@@ -166,6 +210,7 @@ export default function Contact() {
                       </label>
                       <input
                         type="email"
+                        name="email"
                         placeholder="your@email.com"
                         required
                         style={inputStyle}
@@ -181,6 +226,7 @@ export default function Contact() {
                     </label>
                     <input
                       type="text"
+                      name="subject"
                       placeholder="What's this about?"
                       required
                       style={inputStyle}
@@ -195,6 +241,7 @@ export default function Contact() {
                     </label>
                     <textarea
                       rows={5}
+                      name="message"
                       placeholder="Tell me about your project..."
                       required
                       style={{ ...inputStyle, resize: 'vertical' as const }}
@@ -203,9 +250,23 @@ export default function Contact() {
                     />
                   </div>
 
-                  <button type="submit" className="btn-primary w-full justify-center">
-                    <Send size={18} />
-                    Send Message
+                  <button
+                    type="submit"
+                    className="btn-primary w-full justify-center"
+                    disabled={status === 'sending'}
+                    style={{ opacity: status === 'sending' ? 0.7 : 1 }}
+                  >
+                    {status === 'sending' ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={18} />
+                        Send Message
+                      </>
+                    )}
                   </button>
                 </form>
               )}
