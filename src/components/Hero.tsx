@@ -157,7 +157,7 @@ export default function Hero() {
                 }}
               >
                 <img
-                  src="/images/formal-profile.jpeg"
+                  src={`${import.meta.env.BASE_URL}images/formal-profile.jpeg`}
                   alt="Shubham Arman"
                   className="w-full h-full object-cover object-top"
                 />

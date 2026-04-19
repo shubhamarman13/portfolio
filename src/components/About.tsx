@@ -41,7 +41,7 @@ export default function About() {
               }}
             >
               <img
-                src="/images/outdoor-night.jpeg"
+                src={`${import.meta.env.BASE_URL}images/outdoor-night.jpeg`}
                 alt="Shubham Arman - casual"
                 className="w-full h-64 object-cover object-top"
                 style={{ filter: 'brightness(0.9)' }}
@@ -57,7 +57,7 @@ export default function About() {
               }}
             >
               <img
-                src="/images/office-desk.jpeg"
+                src={`${import.meta.env.BASE_URL}images/office-desk.jpeg`}
                 alt="Shubham at Accenture office"
                 className="w-full h-48 object-cover object-center"
                 style={{ filter: 'brightness(0.9)' }}
@@ -71,7 +71,7 @@ export default function About() {
               }}
             >
               <img
-                src="/images/working-laptop.jpeg"
+                src={`${import.meta.env.BASE_URL}images/working-laptop.jpeg`}
                 alt="Shubham working on laptop"
                 className="w-full h-48 object-cover object-top"
                 style={{ filter: 'brightness(0.9)' }}

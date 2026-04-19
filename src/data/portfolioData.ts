@@ -10,7 +10,7 @@ export const portfolioData = {
   email: "shubhamarman13@gmail.com",
   phone: "+91 98765 43210",
   location: "Phagwara, Punjab / Gurugram, India",
-  resumeLink: "/Shubham_Arman_Resume.docx",
+  resumeLink: import.meta.env.BASE_URL + "Shubham_Arman_Resume.docx",
   blogLink: "https://theupcomingprogrammer.com/",
   connections: "500+",
 
